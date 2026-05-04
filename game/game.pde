@@ -7,31 +7,25 @@ char lastDirection = ' ';
 char facingDirection = 's';
 
 void setupGame() {
-  // Camera initialization
-  camX = (4 * 256);
-  camY = (3 * 256+96);
+  camX = constrain(4 * 256, 0, max(0, 8 * 256 - GAME_W));
+  camY = constrain(3 * 256 + 96, 0, max(0, 5 * 256 - GAME_H));
 }
 
 void drawGame() {
   background(0);
   // Handle movement (no diagonal - last key pressed has priority)
-  if (lastDirection == 'w') {
-    camY -= 2;
-  } else if (lastDirection == 's') {
-    camY += 2;
-  } else if (lastDirection == 'a') {
-    camX -= 2;
-  } else if (lastDirection == 'd') {
-    camX += 2;
-  }
-  camX = constrain(camX, 128, 8 * 256 - width);
-  camY = constrain(camY, 0, 5 * 256 - height);
+  if (lastDirection == 'w') camY -= 4;
+  else if (lastDirection == 's') camY += 4;
+  else if (lastDirection == 'a') camX -= 4;
+  else if (lastDirection == 'd') camX += 4;
+  camX = constrain(camX, 0, max(0, 8 * 256 - GAME_W));
+  camY = constrain(camY, 0, max(0, 5 * 256 - GAME_H));
   pushMatrix();
   translate(-camX, -camY);
-  int startRow = max(camY / 256, 0);
-  int endRow   = min((camY + height) / 256, 4);
-  int startCol = max(camX / 256, 0);
-  int endCol   = min((camX + width) / 256, 7);
+  int startRow = max(camY / 256 - 1, 0);
+  int endRow   = min((camY + GAME_H) / 256 + 1, 4);
+  int startCol = max(camX / 256 - 1, 0);
+  int endCol   = min((camX + GAME_W) / 256 + 1, 7);
   for (int row = startRow; row <= endRow; row++) {
     for (int col = startCol; col <= endCol; col++) {
       if (tiles[col][row] != null) {

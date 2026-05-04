@@ -59,9 +59,15 @@ int loadingDotsTimer = 0;
 int totalImages = 8 * 5;
 int loadedImages = 0;
 
+float SCALE_FACTOR = 1.0;
+int GAME_W = 480;
+int GAME_H = 320;
+
 void setup() {
-  size(480, 320);
+  fullScreen();
   frameRate(60);
+  // Calcular el zoom para que 480x320 llene la pantalla (manteniendo proporciones)
+  SCALE_FACTOR = min((float)displayWidth / GAME_W, (float)displayHeight / GAME_H);
   textFont(createFont("Courier New Bold", 14));
   
   // Inicializar estrellas
@@ -109,6 +115,14 @@ String[] wrapText(String txt, int maxChars) {
 }
 
 void draw() {
+  background(0);
+  // Centrar y escalar el canvas logico 480x320
+  float offsetX = (width - GAME_W * SCALE_FACTOR) / 2;
+  float offsetY = (height - GAME_H * SCALE_FACTOR) / 2;
+  pushMatrix();
+  translate(offsetX, offsetY);
+  scale(SCALE_FACTOR);
+
   // Only clear with menu background on non-game screens
   if (screen != 3) {
     background(DARK);
@@ -132,24 +146,25 @@ void draw() {
   // Fade overlay
   handleFade();
   
+  popMatrix();
   titleAnim++;
 }
 
 // ===== PANTALLA 1: TITULO =====
 void drawTitleScreen() {
   // Fondo degradado nocturno
-  for (int y = 0; y < height; y++) {
-    float t = (float)y / height;
+  for (int y = 0; y < GAME_H; y++) {
+    float t = (float)y / GAME_H;
     color c = lerpColor(color(8, 12, 48), color(24, 16, 56), t);
     stroke(c);
-    line(0, y, width, y);
+    line(0, y, GAME_W, y);
   }
   
   // Estrellas animadas
   noStroke();
   for (int i = 0; i < starX.length; i++) {
     starY[i] += starSpeed[i];
-    if (starY[i] > height) starY[i] = 0;
+    if (starY[i] > GAME_H) starY[i] = 0;
     float b = starBright[i] * (0.5 + 0.5 * sin(frameCount * 0.03 + i));
     fill(b, b, b * 0.9, b);
     ellipse(starX[i], starY[i], 1.5, 1.5);
@@ -158,11 +173,11 @@ void drawTitleScreen() {
   // Luna/planeta decorativo
   noStroke();
   fill(BLUE_DARK, 80);
-  ellipse(width - 60, 55, 90, 90);
+  ellipse(GAME_W - 60, 55, 90, 90);
   fill(BLUE_MID, 120);
-  ellipse(width - 55, 50, 75, 75);
+  ellipse(GAME_W - 55, 50, 75, 75);
   fill(BLUE_LIGHT, 60);
-  ellipse(width - 65, 42, 50, 50);
+  ellipse(GAME_W - 65, 42, 50, 50);
   
   // Castillo silueta (simple, pixelado)
   drawCastle();
@@ -170,7 +185,7 @@ void drawTitleScreen() {
   // Panel titulo principal
   int panelW = 360;
   int panelH = 90;
-  int panelX = (width - panelW) / 2;
+  int panelX = (GAME_W - panelW) / 2;
   int panelY = 30;
   
   // Sombra panel
@@ -197,24 +212,24 @@ void drawTitleScreen() {
   fill(SHADOW);
   textAlign(CENTER, CENTER);
   textSize(28);
-  text("MOGWARTS", width/2 + 2, panelY + 32 + 2);
+  text("MOGWARTS", GAME_W/2 + 2, panelY + 32 + 2);
   
   // Texto dorado
   fill(GOLD);
   textSize(28);
-  text("MOGWARTS", width/2, panelY + 32);
+  text("MOGWARTS", GAME_W/2, panelY + 32);
   
   // Subtitulo
   fill(BLUE_LIGHT);
   textSize(11);
-  text("PSL  SCALE  EDITION", width/2, panelY + 62);
+  text("PSL  SCALE  EDITION", GAME_W/2, panelY + 62);
   
   // Lineas decorativas
   fill(RED_MAIN);
   rect(panelX + 20, panelY + 45, panelW - 40, 2);
   
   // Personaje (ASCII art simple con shapes)
-  drawCharacter(width/2, 205);
+  drawCharacter(GAME_W/2, 205);
   
   // "CLICK EN CUALQUIER LADO"
   if (showBlink) {
@@ -223,20 +238,20 @@ void drawTitleScreen() {
     fill(DARK);
     textAlign(CENTER, CENTER);
     textSize(12);
-    text("▼  Click en cualquier lado  ▼", width/2, 283);
+    text("▼  Click en cualquier lado  ▼", GAME_W/2, 283);
   } else {
     drawDialogBox(60, 262, 360, 42);
     fill(DARK);
     textAlign(CENTER, CENTER);
     textSize(12);
-    text("   Click en cualquier lado   ", width/2, 283);
+    text("   Click en cualquier lado   ", GAME_W/2, 283);
   }
   
   // Version
   fill(GRAY_MED);
   textSize(9);
   textAlign(LEFT, BOTTOM);
-  text("v1.0  MOGWARTS", 8, height - 4);
+  text("v1.0  MOGWARTS", 8, GAME_H - 4);
   textAlign(CENTER, CENTER);
 }
 
@@ -356,32 +371,32 @@ void drawDialogBox(float x, float y, float w, float h) {
 // ===== PANTALLA 2: CONTROLES =====
 void drawControlsScreen() {
   // Fondo
-  for (int y = 0; y < height; y++) {
-    float t = (float)y / height;
+  for (int y = 0; y < GAME_H; y++) {
+    float t = (float)y / GAME_H;
     color c = lerpColor(color(16, 24, 72), color(8, 48, 40), t);
     stroke(c);
-    line(0, y, width, y);
+    line(0, y, GAME_W, y);
   }
   noStroke();
   
   // Header
   fill(BLUE_DARK);
-  rect(0, 0, width, 52);
+  rect(0, 0, GAME_W, 52);
   stroke(GOLD);
   strokeWeight(2);
-  line(0, 50, width, 50);
+  line(0, 50, GAME_W, 50);
   noStroke();
   
   // Decoracion header
   fill(GOLD);
-  rect(0, 48, width, 4);
+  rect(0, 48, GAME_W, 4);
   
   fill(WHITE);
   textAlign(CENTER, CENTER);
   textSize(20);
-  text("CONTROLES", width/2 + 2, 27 + 1);
+  text("CONTROLES", GAME_W/2 + 2, 27 + 1);
   fill(GOLD);
-  text("CONTROLES", width/2, 27);
+  text("CONTROLES", GAME_W/2, 27);
   
   // Panel principal controles
   drawDialogBox(30, 62, 420, 195);
@@ -439,9 +454,9 @@ void drawControlsScreen() {
   textAlign(CENTER, CENTER);
   textSize(11);
   if (showBlink) {
-    text("▼  Click para continuar  ▼", width/2, 289);
+    text("▼  Click para continuar  ▼", GAME_W/2, 289);
   } else {
-    text("   Click para continuar   ", width/2, 289);
+    text("   Click para continuar   ", GAME_W/2, 289);
   }
 }
 
@@ -471,36 +486,36 @@ void drawKey(float x, float y, String k, color c) {
 // ===== PANTALLA 3: CONTEXTO =====
 void drawContextScreen() {
   // Fondo pergamino oscuro
-  for (int y = 0; y < height; y++) {
-    float t = (float)y / height;
+  for (int y = 0; y < GAME_H; y++) {
+    float t = (float)y / GAME_H;
     color c = lerpColor(color(32, 20, 12), color(20, 32, 16), t);
     stroke(c);
-    line(0, y, width, y);
+    line(0, y, GAME_W, y);
   }
   noStroke();
   
   // Efecto ruido/textura
   for (int i = 0; i < 200; i++) {
-    float nx = random(width);
-    float ny = random(height);
+    float nx = random(GAME_W);
+    float ny = random(GAME_H);
     fill(255, random(5, 20));
     ellipse(nx, ny, 1, 1);
   }
   
   // Header escudo
   fill(color(48, 28, 8));
-  rect(0, 0, width, 56);
+  rect(0, 0, GAME_W, 56);
   fill(GOLD);
-  rect(0, 54, width, 3);
+  rect(0, 54, GAME_W, 3);
   
   // Escudo decorativo
-  drawShield(width/2, 28);
+  drawShield(GAME_W/2, 28);
   
   // "HISTORIA"
   fill(CREAM);
   textAlign(CENTER, CENTER);
   textSize(9);
-  text("✦  PROLOGO  ✦", width/2, 44);
+  text("✦  PROLOGO  ✦", GAME_W/2, 44);
   
   // Area de texto con scroll
   int textAreaY = 64;
@@ -508,16 +523,16 @@ void drawContextScreen() {
   
   // Marco del texto
   fill(color(20, 35, 20), 200);
-  rect(24, textAreaY, width - 48, textAreaH, 4);
+  rect(24, textAreaY, GAME_W - 48, textAreaH, 4);
   stroke(color(80, 120, 60));
   strokeWeight(1);
-  rect(24, textAreaY, width - 48, textAreaH, 4);
+  rect(24, textAreaY, GAME_W - 48, textAreaH, 4);
   noStroke();
   
   // Clip/mascara visual (barras arriba y abajo)
   fill(color(32, 20, 12));
-  rect(0, 0, width, textAreaY);
-  rect(0, textAreaY + textAreaH, width, height);
+  rect(0, 0, GAME_W, textAreaY);
+  rect(0, textAreaY + textAreaH, GAME_W, GAME_H);
   
   // Texto scrollable
   float lineHeight = 17;
@@ -545,23 +560,23 @@ void drawContextScreen() {
   
   // Re-dibujar barras encima del texto
   fill(color(32, 20, 12));
-  rect(0, 0, width, textAreaY);
+  rect(0, 0, GAME_W, textAreaY);
   
   // Recalcular Y del footer
   int footerY = textAreaY + textAreaH + 4;
   fill(color(32, 20, 12));
-  rect(0, footerY, width, height - footerY);
+  rect(0, footerY, GAME_W, GAME_H - footerY);
   
   // Header de nuevo encima
   fill(color(48, 28, 8));
-  rect(0, 0, width, 56);
+  rect(0, 0, GAME_W, 56);
   fill(GOLD);
-  rect(0, 54, width, 3);
-  drawShield(width/2, 28);
+  rect(0, 54, GAME_W, 3);
+  drawShield(GAME_W/2, 28);
   fill(CREAM);
   textAlign(CENTER, CENTER);
   textSize(9);
-  text("✦  PROLOGO  ✦", width/2, 44);
+  text("✦  PROLOGO  ✦", GAME_W/2, 44);
   
   // Scrollbar
   float totalH = contextLines.length * lineHeight;
@@ -570,9 +585,9 @@ void drawContextScreen() {
   float barY = textAreaY + scrollRatio * (textAreaH - barH);
   
   fill(color(80, 120, 60), 120);
-  rect(width - 18, textAreaY, 8, textAreaH, 4);
+  rect(GAME_W - 18, textAreaY, 8, textAreaH, 4);
   fill(GOLD, 180);
-  rect(width - 18, barY, 8, barH, 4);
+  rect(GAME_W - 18, barY, 8, barH, 4);
   
   // Footer
   drawDialogBox(60, 288, 360, 26);
@@ -582,10 +597,10 @@ void drawContextScreen() {
   
   float maxScroll = contextLines.length * lineHeight - textAreaH + 32;
   if (contextScroll >= maxScroll - 5) {
-    if (showBlink) text("▼  Click para comenzar  ▼", width/2, 301);
-    else text("   Click para comenzar   ", width/2, 301);
+    if (showBlink) text("▼  Click para comenzar  ▼", GAME_W/2, 301);
+    else text("   Click para comenzar   ", GAME_W/2, 301);
   } else {
-    text("Scroll o Click para avanzar", width/2, 301);
+    text("Scroll o Click para avanzar", GAME_W/2, 301);
   }
 }
 
@@ -641,7 +656,7 @@ void handleFade() {
   
   if (fadeAlpha > 0) {
     fill(SHADOW, fadeAlpha);
-    rect(0, 0, width, height);
+    rect(0, 0, GAME_W, GAME_H);
   }
 }
 
@@ -660,15 +675,15 @@ void drawLoadingScreen() {
   fill(GOLD);
   textAlign(CENTER, CENTER);
   textSize(16);
-  text("MOGWARTS", width/2, 90);
+  text("MOGWARTS", GAME_W/2, 90);
   fill(BLUE_LIGHT);
   textSize(9);
-  text("PSL SCALE EDITION", width/2, 110);
+  text("PSL SCALE EDITION", GAME_W/2, 110);
 
   // Barra de carga
   int barW = 280, barH = 16;
-  int barX = (width - barW) / 2;
-  int barY = height/2 - barH/2;
+  int barX = (GAME_W - barW) / 2;
+  int barY = GAME_H/2 - barH/2;
 
   // Borde barra
   fill(SHADOW); rect(barX-2, barY-2, barW+4, barH+4, 4);
@@ -686,7 +701,7 @@ void drawLoadingScreen() {
   fill(WHITE);
   textAlign(CENTER, CENTER);
   textSize(10);
-  text(int(loadingProgress * 100) + "%", width/2, barY + barH + 14);
+  text(int(loadingProgress * 100) + "%", GAME_W/2, barY + barH + 14);
 
   // "Cargando..."
   loadingDotsTimer++;
@@ -695,7 +710,7 @@ void drawLoadingScreen() {
   for (int i = 0; i < loadingDots; i++) dots += ".";
   fill(CREAM);
   textSize(11);
-  text("Cargando" + dots, width/2, barY - 20);
+  text("Cargando" + dots, GAME_W/2, barY - 20);
 
   // Load images progressively (20 per frame for faster loading)
   int imagesPerFrame = 20;
@@ -715,6 +730,12 @@ void drawLoadingScreen() {
 // ===== INPUT =====
 void mousePressed() {
   if (fadingIn || fadingOut) return;
+  
+  // Convertir coordenadas del mouse al espacio logico
+  float offsetX = (width - GAME_W * SCALE_FACTOR) / 2;
+  float offsetY = (height - GAME_H * SCALE_FACTOR) / 2;
+  float lx = (mouseX - offsetX) / SCALE_FACTOR;
+  float ly = (mouseY - offsetY) / SCALE_FACTOR;
   
   if (screen == 0) {
     goToScreen(1);

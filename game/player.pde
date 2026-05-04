@@ -4,7 +4,7 @@ PImage spriteSheet;
 int spriteCol = 1;      // 0=izq, 1=centro, 2=der
 int spriteRow = 0;      // 0=S, 1=W, 2=A, 3=D
 int animTimer = 0;
-int animSpeed = 8;      // frames entre columnas
+int animSpeed = 3;      // frames entre columnas
 
 void setupPlayer() {
   spriteSheet = loadImage("protasprites.png");
