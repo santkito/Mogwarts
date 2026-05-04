@@ -281,7 +281,7 @@ if (dialogoVaris && swscreen3 == 1) {
     fill(DARK);
     textAlign(LEFT, TOP);
     textSize(9);
-    text("Vamos a hacer la vida imposible\nJAJAJAJAJA", 44, GAME_H - 62);
+    text("Vamos a hacerle la vida imposible\nJAJAJAJAJA", 44, GAME_H - 62);
     
     fill(GRAY_MED);
     textAlign(RIGHT, BOTTOM);
