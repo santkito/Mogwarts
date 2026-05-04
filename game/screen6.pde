@@ -194,10 +194,16 @@ void drawScreen6() {
     // GAME SCREEN
     image(screen6Dominio, 0, 0, width, height);
     
-    // Generar nuevos mensajes
-    if (frameCount % 60 == 0 && screen6Messages.size() < 8) {
+    // Generar nuevos mensajes (mas rapido y mas cantidad)
+    if (frameCount % 18 == 0 && screen6Messages.size() < 22) {
       int type = int(random(3));
-      screen6Messages.add(new Message(type));
+      screen6Messages.add(new Message(type, true));
+      screen6TotalMessages++;
+    }
+    // Spawn extra ocasional
+    if (frameCount % 30 == 0 && screen6Messages.size() < 22) {
+      int type = int(random(3));
+      screen6Messages.add(new Message(type, true));
       screen6TotalMessages++;
     }
     
@@ -205,7 +211,20 @@ void drawScreen6() {
     for (int i = screen6Messages.size() - 1; i >= 0; i--) {
       Message m = screen6Messages.get(i);
       m.update();
-      m.display();
+      // Display usando imagenes de screen6
+      if (screen6MessageImages != null && screen6MessageImages[m.type] != null) {
+        imageMode(CENTER);
+        tint(255, 255, 255);
+        image(screen6MessageImages[m.type], m.x, m.y, 80, 80);
+        noTint();
+        imageMode(CORNER);
+        fill(255);
+        textAlign(CENTER, CENTER);
+        textSize(14);
+        text(m.text, m.x, m.y);
+      } else {
+        m.display();
+      }
       
       // Checar si el mensaje alcanzó al jugador
       if (m.checkCollision(screen6PlayerX, screen6PlayerY)) {
@@ -374,17 +393,18 @@ void screen6KeyPressed() {
     screen6Score = 0;
     screen6Initialized = false;
     if (swscreen3 == 2 || swscreen3 < 2) {
-      // Venía de casa1 (jefe1) → ir a casa2 con jefe2
       screen = 3;
       swscreen3 = 3;
     } else if (swscreen3 == 3) {
-      // Venía de casa2 (jefe2) → ir a casa3 con jefe3
       screen = 3;
       swscreen3 = 4;
     } else if (swscreen3 == 4) {
-      // Venía de casa3 (jefe3) → ir a casa4 con jefe4
       screen = 3;
       swscreen3 = 5;
+    } else if (swscreen3 == 5) {
+      // Ultimo jefe derrotado: ir a pantalla de creditos
+      screen = 7;
+      creditsTimer = 0;
     } else {
       screen = 3;
     }
@@ -486,4 +506,188 @@ void screen6KeyReleased() {
   else if (screen6APressed) screen6LastDirection = 'a';
   else if (screen6DPressed) screen6LastDirection = 'd';
   else screen6LastDirection = ' ';
+}
+// ===== PANTALLA DE CREDITOS (screen == 7) =====
+int creditsTimer = 0;
+float creditsScroll = 0;
+float creditsScrollTarget = 0;
+
+String[] creditsLines = {
+  "",
+  "~ FIN ~",
+  "",
+  "",
+  "MOGWARTS PSL SCALE EDITION",
+  "",
+  "Un juego sobre bullying, jerarquias sociales",
+  "y encontrar tu lugar en el mundo.",
+  "",
+  "",
+  "=== CREDITOS ===",
+  "",
+  "DISENO Y DIRECCION",
+  "Equipo Mogwarts",
+  "",
+  "PROGRAMACION",
+  "Processing 4",
+  "",
+  "ARTE Y SPRITES",
+  "Equipo de Arte Mogwarts",
+  "",
+  "MUSICA Y SONIDO",
+  "Equipo de Audio",
+  "",
+  "",
+  "=== PERSONAJES ===",
+  "",
+  "Clavicular",
+  "El protagonista de esta historia.",
+  "Buscador de su lugar en el mundo.",
+  "",
+  "Varis",
+  "El falso amigo. Manipulador y envidioso.",
+  "",
+  "Lacy",
+  "Complice de Varis.",
+  "",
+  "Hedwig",
+  "La unica amiga verdadera de Clavicular.",
+  "",
+  "Los Jefes",
+  "Representaciones del bullying en sus",
+  "distintas formas: verbal, social,",
+  "psicologico y cibernetico.",
+  "",
+  "",
+  "=== MENSAJE FINAL ===",
+  "",
+  "El bullying existe en todas sus formas.",
+  "Reconocerlo es el primer paso",
+  "para combatirlo.",
+  "",
+  "Si estas pasando por algo similar,",
+  "habla con alguien de confianza.",
+  "No estas solo.",
+  "",
+  "",
+  "Gracias por jugar.",
+  "",
+  "",
+  "~ MOGWARTS PSL SCALE ~",
+  "",
+  ""
+};
+
+void drawCredits() {
+  // Fondo oscuro estrellado
+  background(5, 5, 18);
+  
+  // Estrellas de fondo animadas
+  noStroke();
+  for (int i = 0; i < 120; i++) {
+    float sx = (i * 137.5 + 50) % width;
+    float sy = (i * 97.3 + 30) % height;
+    float bright = 100 + 80 * sin(frameCount * 0.02 + i * 0.7);
+    fill(bright, bright, bright * 0.9, bright);
+    ellipse(sx, sy, 1.5, 1.5);
+  }
+
+  // Scroll automatico suave
+  creditsTimer++;
+  if (creditsTimer > 90) {
+    creditsScroll += 0.8;
+  }
+
+  float lineH = 42;
+  float totalH = creditsLines.length * lineH;
+  float startY = height * 0.85 - creditsScroll;
+
+  // Dibuja cada linea
+  for (int i = 0; i < creditsLines.length; i++) {
+    float ly = startY + i * lineH;
+    if (ly < -60 || ly > height + 60) continue;
+
+    String line = creditsLines[i];
+
+    // Fade vertical en los bordes
+    float fadeTop = constrain(map(ly, 0, height * 0.15, 0, 255), 0, 255);
+    float fadeBot = constrain(map(ly, height * 0.85, height, 255, 0), 0, 255);
+    float alpha = min(fadeTop, fadeBot);
+
+    // Estilos segun contenido
+    if (line.equals("~ FIN ~") || line.equals("~ MOGWARTS PSL SCALE ~")) {
+      fill(232, 192, 0, alpha);
+      textAlign(CENTER, CENTER);
+      textSize(52);
+      // Sombra
+      fill(40, 30, 0, alpha * 0.6);
+      text(line, width/2 + 3, ly + 3);
+      fill(232, 192, 0, alpha);
+      text(line, width/2, ly);
+    } else if (line.equals("MOGWARTS PSL SCALE EDITION")) {
+      fill(136, 168, 248, alpha);
+      textAlign(CENTER, CENTER);
+      textSize(32);
+      text(line, width/2, ly);
+    } else if (line.startsWith("===") && line.endsWith("===")) {
+      fill(200, 40, 40, alpha);
+      textAlign(CENTER, CENTER);
+      textSize(26);
+      text(line, width/2, ly);
+    } else if (line.equals("DISENO Y DIRECCION") || line.equals("PROGRAMACION") ||
+               line.equals("ARTE Y SPRITES") || line.equals("MUSICA Y SONIDO") ||
+               line.equals("Clavicular") || line.equals("Varis") || line.equals("Lacy") ||
+               line.equals("Hedwig") || line.equals("Los Jefes")) {
+      fill(255, 200, 100, alpha);
+      textAlign(CENTER, CENTER);
+      textSize(22);
+      text(line, width/2, ly);
+    } else if (line.equals("Gracias por jugar.")) {
+      float pulse = 180 + 75 * sin(frameCount * 0.05);
+      fill(100, 200, 100, min(alpha, pulse));
+      textAlign(CENTER, CENTER);
+      textSize(30);
+      text(line, width/2, ly);
+    } else if (!line.equals("")) {
+      fill(220, 220, 220, alpha);
+      textAlign(CENTER, CENTER);
+      textSize(18);
+      text(line, width/2, ly);
+    }
+  }
+
+  // Overlay top gradient para fade suave
+  for (int y = 0; y < height * 0.12; y++) {
+    float a = map(y, 0, height * 0.12, 255, 0);
+    fill(5, 5, 18, a);
+    noStroke();
+    rect(0, y, width, 1);
+  }
+  for (int y = 0; y < height * 0.12; y++) {
+    float a = map(y, 0, height * 0.12, 0, 255);
+    fill(5, 5, 18, a);
+    noStroke();
+    rect(0, height - y, width, 1);
+  }
+
+  // Instruccion al llegar al final
+  if (creditsScroll > totalH * 0.6) {
+    float blinkA = 150 + 105 * sin(frameCount * 0.08);
+    fill(200, 200, 200, blinkA);
+    textAlign(CENTER, CENTER);
+    textSize(18);
+    text("Presiona ENTER para volver al inicio", width/2, height - 40);
+  }
+}
+
+void creditsKeyPressed() {
+  if (keyCode == ENTER) {
+    // Volver al titulo
+    screen = 0;
+    swscreen3 = 0;
+    creditsScroll = 0;
+    creditsTimer = 0;
+    fadingIn = true;
+    fadeAlpha = 255;
+  }
 }

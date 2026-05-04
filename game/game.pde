@@ -225,7 +225,7 @@ void drawGame() {
   textSize(10);
   if(swscreen3==0){
   text("Habla con tu mejor amigo Varis", GAME_W / 2, GAME_H - 35);
-  }else{text("Dirigete hacia el norte", GAME_W / 2, GAME_H - 35);}
+  }else{text("Dirigete hacia el este", GAME_W / 2, GAME_H - 35);}
 }
 if (dialogoVaris && swscreen3 == 0) {
   // Dialogo original de Varis (swscreen3 == 0)
@@ -340,6 +340,12 @@ void keyPressed() {
   // Screen 6 input
   if (screen == 6) {
     screen6KeyPressed();
+    return;
+  }
+
+  // Credits screen input
+  if (screen == 7) {
+    creditsKeyPressed();
     return;
   }
   

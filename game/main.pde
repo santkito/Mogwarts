@@ -135,6 +135,13 @@ void draw() {
     return;
   }
 
+  if (screen == 7) {
+    // Pantalla de creditos - pantalla completa
+    drawCredits();
+    titleAnim++;
+    return;
+  }
+
   // Centrar y escalar el canvas logico 480x320
   float offsetX = (width - GAME_W * SCALE_FACTOR) / 2;
   float offsetY = (height - GAME_H * SCALE_FACTOR) / 2;

@@ -117,8 +117,22 @@ class Message {
     createdFrame = frameCount;
   }
   
+  // Constructor rapido para screen6
+  Message(int t, boolean fast) {
+    type = t;
+    // screen6 usa sus propias frases
+    text = screen6Frases[type][int(random(screen6Frases[type].length))];
+    x = random(80, width - 80);
+    y = random(80, height - 200);
+    float speed = random(5, 12);
+    float angle = random(TWO_PI);
+    vx = cos(angle) * speed;
+    vy = sin(angle) * speed;
+    createdFrame = frameCount;
+  }
+  
   void update() {
-    if (!blocked && !gamePaused) {
+    if (!blocked && !gamePaused && !screen6GamePaused) {
       x += vx;
       y += vy;
       
