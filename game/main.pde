@@ -752,10 +752,25 @@ void drawLoadingScreen() {
 void mousePressed() {
   if (fadingIn || fadingOut) return;
   if (dialogoVaris) {
-  dialogoVaris = false;
-  goToScreen(5);
-  return;
-}
+    if (swscreen3 == 1) {
+      if (dialogoPage == 0) {
+        dialogoPage = 1; // avanzar a dialogo de Lacy
+      } else if (dialogoPage == 1) {
+        dialogoPage = 2; // avanzar a dialogo de Clavicular
+      } else if (dialogoPage == 2) {
+        dialogoPage = 3; // avanzar a dialogo final de Varis
+      } else if (dialogoPage == 3) {
+        // Varis y Lacy se van: swscreen3 = 2, NPCs desaparecen
+        dialogoVaris = false;
+        dialogoPage = 0;
+        swscreen3 = 2;
+      }
+    } else {
+      dialogoVaris = false;
+      goToScreen(5);
+    }
+    return;
+  }
   // Convertir coordenadas del mouse al espacio logico
   float offsetX = (width - GAME_W * SCALE_FACTOR) / 2;
   float offsetY = (height - GAME_H * SCALE_FACTOR) / 2;
@@ -777,18 +792,7 @@ void mousePressed() {
     }
   } else if (screen == 5) {
     // Manejar click en tutorial
-    if (mostrarGameplayImage) {
-      mostrarGameplayImage = false;
-      tutorialMovementEnabled = true;
-      gameplayClicked = true;
-    } else if (!gameplayClicked && dialogoIndex < dialogos.length - 1) {
-      dialogoIndex++;
-      dialogoLines = wrapText(dialogos[dialogoIndex], 75);
-    } else if (!gameplayClicked) {
-      mostrarGameplayImage = true;
-      mostrarDialogo = false;
-      tutorialMovementEnabled = false;
-    }
+    tutorialMousePressed();
   }
 }
 

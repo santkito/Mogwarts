@@ -63,4 +63,5 @@ void restartGame() {
   lastDirection = ' ';
   facingDirection = 's';
   paused = false;
+  swscreen3 = 0;
 }
