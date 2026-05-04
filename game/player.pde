@@ -43,7 +43,7 @@ void drawPlayer() {
     scale(1, -1);
     image(frame, 0, 0, 45, 45);
     popMatrix();
-  } else if (facingDirection == 'a' || facingDirection == 'd') {
+  } else if (facingDirection == 'a') {
     pushMatrix();
     translate(224 + 45, 144);
     scale(-1, 1);

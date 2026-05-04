@@ -85,6 +85,7 @@ void setup() {
 
   setupGame();
   setupPlayer();
+  setupTutorial();
   tiles = new PImage[8][5];
   screen = 4; // Start with loading screen
   drawLoadingScreen(); // Draw initial loading screen to avoid gray screen
@@ -116,6 +117,16 @@ String[] wrapText(String txt, int maxChars) {
 
 void draw() {
   background(0);
+
+  if (screen == 5) {
+    // El tutorial está diseñado para aprovechar el tamaño de pantalla completo,
+    // por lo que no lo escalamos con el canvas lógico 480x320.
+    drawTutorial();
+    handleFade();
+    titleAnim++;
+    return;
+  }
+
   // Centrar y escalar el canvas logico 480x320
   float offsetX = (width - GAME_W * SCALE_FACTOR) / 2;
   float offsetY = (height - GAME_H * SCALE_FACTOR) / 2;
@@ -656,11 +667,21 @@ void handleFade() {
   
   if (fadeAlpha > 0) {
     fill(SHADOW, fadeAlpha);
-    rect(0, 0, GAME_W, GAME_H);
+    if (screen == 5) {
+      rect(0, 0, width, height);
+    } else {
+      rect(0, 0, GAME_W, GAME_H);
+    }
   }
 }
 
 void goToScreen(int s) {
+  if (s == 5) {
+    screen = s;
+    contextScroll = 0;
+    contextTarget = 0;
+    return;
+  }
   if (!fadingOut && !fadingIn) {
     fadingOut = true;
     nextScreen = s;
@@ -730,7 +751,11 @@ void drawLoadingScreen() {
 // ===== INPUT =====
 void mousePressed() {
   if (fadingIn || fadingOut) return;
-  
+  if (dialogoVaris) {
+  dialogoVaris = false;
+  goToScreen(5);
+  return;
+}
   // Convertir coordenadas del mouse al espacio logico
   float offsetX = (width - GAME_W * SCALE_FACTOR) / 2;
   float offsetY = (height - GAME_H * SCALE_FACTOR) / 2;
@@ -749,6 +774,20 @@ void mousePressed() {
     if (contextTarget >= maxScroll - 5) {
       // Fin - pasar al juego de prueba
       goToScreen(3);
+    }
+  } else if (screen == 5) {
+    // Manejar click en tutorial
+    if (mostrarGameplayImage) {
+      mostrarGameplayImage = false;
+      tutorialMovementEnabled = true;
+      gameplayClicked = true;
+    } else if (!gameplayClicked && dialogoIndex < dialogos.length - 1) {
+      dialogoIndex++;
+      dialogoLines = wrapText(dialogos[dialogoIndex], 75);
+    } else if (!gameplayClicked) {
+      mostrarGameplayImage = true;
+      mostrarDialogo = false;
+      tutorialMovementEnabled = false;
     }
   }
 }
