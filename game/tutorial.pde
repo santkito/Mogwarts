@@ -316,10 +316,10 @@ void drawTutorial() {
     }
     
     // Manejar movimiento
-    if (tutorialLastDirection == 'w') tutorialPlayerY -= 5;
-    if (tutorialLastDirection == 's') tutorialPlayerY += 5;
-    if (tutorialLastDirection == 'a') tutorialPlayerX -= 5;
-    if (tutorialLastDirection == 'd') tutorialPlayerX += 5;
+    if (tutorialLastDirection == 'w') tutorialPlayerY -= 15;
+    if (tutorialLastDirection == 's') tutorialPlayerY += 15;
+    if (tutorialLastDirection == 'a') tutorialPlayerX -= 15;
+    if (tutorialLastDirection == 'd') tutorialPlayerX += 15;
     
     tutorialPlayerX = constrain(tutorialPlayerX, 45, width - 45);
     tutorialPlayerY = constrain(tutorialPlayerY, 45, height - 150);

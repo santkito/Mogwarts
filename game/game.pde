@@ -84,7 +84,11 @@ void drawGame() {
   textSize(10);
   if(swscreen3==0){
   text("Habla con tu mejor amigo Varis", GAME_W / 2, GAME_H - 35);
-  }else{text("Dirigete hacia el norte", GAME_W / 2, GAME_H - 35);}
+  }else if(swscreen3==1){
+  text("Dirigete hacia el este", GAME_W / 2, GAME_H - 35);
+  }else if(swscreen3==2){
+  text("Entra a la primera casa", GAME_W / 2, GAME_H - 35);
+  }
 }
 if (dialogoVaris && swscreen3 == 0) {
   // Dialogo original de Varis (swscreen3 == 0)
@@ -140,7 +144,7 @@ if (dialogoVaris && swscreen3 == 1) {
     fill(DARK);
     textAlign(LEFT, TOP);
     textSize(9);
-    text("Vamos a hacer la vida imposible\nJAJAJAJAJA", 44, GAME_H - 62);
+    text("Vamos a hacerle la vida imposible\nJAJAJAJAJA", 44, GAME_H - 62);
     
     fill(GRAY_MED);
     textAlign(RIGHT, BOTTOM);
