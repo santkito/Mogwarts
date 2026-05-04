@@ -73,6 +73,69 @@ boolean piesSobreNaranja(int px, int py) {
   return esNaranjaEnMundo(feetL, feetY) || esNaranjaEnMundo(feetC, feetY) || esNaranjaEnMundo(feetR, feetY);
 }
 
+// Devuelve true si el punto mundo (wx, wy) tiene color RGB(230, 81, 0)
+boolean esNaranjaOscuroEnMundo(int wx, int wy) {
+  int col = wx / 256;
+  int row = wy / 256;
+  if (col < 0 || col >= 8 || row < 0 || row >= 5) return false;
+  PImage tile = tiles[col][row];
+  if (tile == null) return false;
+  int px = constrain(wx % 256, 0, tile.width - 1);
+  int py = constrain(wy % 256, 0, tile.height - 1);
+  color c = tile.get(px, py);
+  return (red(c) > 215 && red(c) < 245 && green(c) > 65 && green(c) < 95 && blue(c) < 15);
+}
+
+boolean piesSobreNaranjaOscuro(int px, int py) {
+  int feetY = py + 42;
+  int feetL = px + 8;
+  int feetC = px + 22;
+  int feetR = px + 36;
+  return esNaranjaOscuroEnMundo(feetL, feetY) || esNaranjaOscuroEnMundo(feetC, feetY) || esNaranjaOscuroEnMundo(feetR, feetY);
+}
+
+// Devuelve true si el punto mundo (wx, wy) tiene color RGB(136, 14, 79)
+boolean esMagentaEnMundo(int wx, int wy) {
+  int col = wx / 256;
+  int row = wy / 256;
+  if (col < 0 || col >= 8 || row < 0 || row >= 5) return false;
+  PImage tile = tiles[col][row];
+  if (tile == null) return false;
+  int px = constrain(wx % 256, 0, tile.width - 1);
+  int py = constrain(wy % 256, 0, tile.height - 1);
+  color c = tile.get(px, py);
+  return (red(c) > 120 && red(c) < 152 && green(c) < 30 && blue(c) > 63 && blue(c) < 95);
+}
+
+boolean piesSobreMagenta(int px, int py) {
+  int feetY = py + 42;
+  int feetL = px + 8;
+  int feetC = px + 22;
+  int feetR = px + 36;
+  return esMagentaEnMundo(feetL, feetY) || esMagentaEnMundo(feetC, feetY) || esMagentaEnMundo(feetR, feetY);
+}
+
+// Devuelve true si el punto mundo (wx, wy) tiene color RGB(255, 138, 101)
+boolean esRosaEnMundo(int wx, int wy) {
+  int col = wx / 256;
+  int row = wy / 256;
+  if (col < 0 || col >= 8 || row < 0 || row >= 5) return false;
+  PImage tile = tiles[col][row];
+  if (tile == null) return false;
+  int px = constrain(wx % 256, 0, tile.width - 1);
+  int py = constrain(wy % 256, 0, tile.height - 1);
+  color c = tile.get(px, py);
+  return (red(c) > 240 && green(c) > 122 && green(c) < 154 && blue(c) > 85 && blue(c) < 117);
+}
+
+boolean piesSobreRosa(int px, int py) {
+  int feetY = py + 42;
+  int feetL = px + 8;
+  int feetC = px + 22;
+  int feetR = px + 36;
+  return esRosaEnMundo(feetL, feetY) || esRosaEnMundo(feetC, feetY) || esRosaEnMundo(feetR, feetY);
+}
+
 void drawGame() {
   background(0);
   // Handle movement (no diagonal - last key pressed has priority)
@@ -99,8 +162,27 @@ void drawGame() {
   camX = constrain(playerX - GAME_W / 2 + 22, 0, max(0, 8 * 256 - GAME_W));
   camY = constrain(playerY - GAME_H / 2 + 22, 0, max(0, 5 * 256 - GAME_H));
 
-  // Si swscreen3 == 2 y los pies tocan color naranja RGB(255,152,0) -> nueva pantalla
+  // Si swscreen3 == 2 y los pies tocan color naranja RGB(255,152,0) -> screen6 jefe1
   if (swscreen3 == 2 && piesSobreNaranja(playerX, playerY)) {
+    screen6Initialized = false;
+    goToScreen(6);
+  }
+
+  // Si swscreen3 == 3 y los pies tocan color naranja oscuro RGB(230,81,0) -> screen6 jefe2
+  if (swscreen3 == 3 && piesSobreNaranjaOscuro(playerX, playerY)) {
+    screen6Initialized = false;
+    goToScreen(6);
+  }
+
+  // Si swscreen3 == 4 y los pies tocan color magenta RGB(136,14,79) -> screen6 jefe3
+  if (swscreen3 == 4 && piesSobreMagenta(playerX, playerY)) {
+    screen6Initialized = false;
+    goToScreen(6);
+  }
+
+  // Si swscreen3 == 5 y los pies tocan color RGB(255,138,101) -> screen6 jefe4
+  if (swscreen3 == 5 && piesSobreRosa(playerX, playerY)) {
+    screen6Initialized = false;
     goToScreen(6);
   }
 

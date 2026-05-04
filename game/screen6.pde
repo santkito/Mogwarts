@@ -90,7 +90,15 @@ String[][] screen6Frases = {
 
 void setupScreen6() {
   screen6Dominio = loadImage("dominio.jpeg");
-  screen6Jefe = loadImage("imagenesjefes/jefe1.png");
+  if (swscreen3 == 3) {
+    screen6Jefe = loadImage("jefe2.png");
+  } else if (swscreen3 == 4) {
+    screen6Jefe = loadImage("jefe3.png");
+  } else if (swscreen3 == 5) {
+    screen6Jefe = loadImage("jefe4.png");
+  } else {
+    screen6Jefe = loadImage("imagenesjefes/jefe1.png");
+  }
   
   screen6MessageImages = new PImage[3];
   screen6MessageImages[0] = loadImage("m0.png"); // positivo
@@ -363,8 +371,23 @@ void screen6KeyPressed() {
   char key_lower = Character.toLowerCase(key);
   
   if (keyCode == ENTER && screen6Score >= 150) {
-    screen = 3;
-    swscreen3 = 1;
+    screen6Score = 0;
+    screen6Initialized = false;
+    if (swscreen3 == 2 || swscreen3 < 2) {
+      // Venía de casa1 (jefe1) → ir a casa2 con jefe2
+      screen = 3;
+      swscreen3 = 3;
+    } else if (swscreen3 == 3) {
+      // Venía de casa2 (jefe2) → ir a casa3 con jefe3
+      screen = 3;
+      swscreen3 = 4;
+    } else if (swscreen3 == 4) {
+      // Venía de casa3 (jefe3) → ir a casa4 con jefe4
+      screen = 3;
+      swscreen3 = 5;
+    } else {
+      screen = 3;
+    }
     paused = false;
     return;
   }
