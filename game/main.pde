@@ -79,7 +79,16 @@ void setup() {
   }
   
   // Preparar texto de contexto
-  String contextRaw = "En Mogwarts, la vida social funciona como un ranking invisible llamado PSL Scale, donde cada estudiante es evaluado por su frame, presencia y estatus.\n\nClavicular lleva años estudiando el sistema. Analiza rostros, compara estructuras óseas y calcula su posición en la jerarquía social. Según sus propias estimaciones, está cada vez más cerca de convertirse en un Chadlite.\n\nPero existe un nivel por encima de todos: las fraternidades. Y entre ellas, un nombre domina la cima del ranking.\n\nEl ASU Frat Leader.\n\nHoy, Clavicular está a punto de encontrarse cara a cara con él… y descubrir si su teoría sobre la jerarquía de Mogwarts era correcta.\n\nO si está a punto de ser brutalmente moggeado.";
+  String contextRaw = "En un lugar donde la confianza lo era todo, las amistades parecían inquebrantables.\n"
++ "Risas compartidas, secretos guardados y promesas que nunca debían romperse… o al menos eso parecía.\n\n"
++ "Pero no todas las historias siguen el camino que esperamos.\n\n"
++ "A veces, las palabras más duras vienen de quien solía apoyarte.\n"
++ "Las miradas cambian, los gestos pesan más, y lo que antes era amistad se convierte en algo difícil de reconocer.\n"
++ "El silencio empieza a doler tanto como las palabras.\n\n"
++ "Esta es una historia sobre enfrentar lo que duele.\n"
++ "Sobre encontrar la voz cuando parece más fácil callar.\n"
++ "Y sobre descubrir que incluso en los momentos más difíciles, siempre hay una elección:\n"
++ "quedarse en la sombra… o dar un paso al frente.";
   
   contextLines = wrapText(contextRaw, 44);
 
@@ -576,7 +585,7 @@ void drawContextScreen() {
     if (contextLines[i].equals("")) continue;
     
     // Detección párrafos iniciales
-    boolean isSpecial = contextLines[i].startsWith("El ASU") || contextLines[i].startsWith("moggeado.") || contextLines[i].startsWith("O si");
+    boolean isSpecial = contextLines[i].startsWith("El silencio") || contextLines[i].startsWith("quedarse en");
     
     fill(isSpecial ? RED_LIGHT : CREAM, alpha);
     textAlign(LEFT, CENTER);

@@ -539,7 +539,7 @@ String[] creditsLines = {
   "=== CREDITOS ===",
   "",
   "DISENO Y DIRECCION",
-  "Equipo Mogwarts",
+  "Santiago Rincon",
   "",
   "PROGRAMACION",
   "Processing 4",
