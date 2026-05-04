@@ -126,6 +126,14 @@ void draw() {
     titleAnim++;
     return;
   }
+  
+  if (screen == 6) {
+    // Screen 6 también usa pantalla completa como el tutorial
+    drawScreen6();
+    handleFade();
+    titleAnim++;
+    return;
+  }
 
   // Centrar y escalar el canvas logico 480x320
   float offsetX = (width - GAME_W * SCALE_FACTOR) / 2;
@@ -793,6 +801,9 @@ void mousePressed() {
   } else if (screen == 5) {
     // Manejar click en tutorial
     tutorialMousePressed();
+  } else if (screen == 6) {
+    // Click en pantalla 6: continuar (puedes cambiar el destino)
+    goToScreen(3);
   }
 }
 
@@ -803,3 +814,6 @@ void mouseWheel(MouseEvent event) {
     contextTarget = (int)constrain(contextTarget + event.getCount() * 25, 0, maxScroll);
   }
 }
+
+// ===== PANTALLA 6: NUEVA ZONA =====
+// Implemented in screen6.pde

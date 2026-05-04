@@ -26,6 +26,53 @@ void setupGame() {
   npc2Sprite = loadImage("npc2.png");
 }
 
+// Devuelve true si el punto mundo (wx, wy) cae sobre un pixel RGB(50,42,40)
+boolean esParedEnMundo(int wx, int wy) {
+  int col = wx / 256;
+  int row = wy / 256;
+  if (col < 0 || col >= 8 || row < 0 || row >= 5) return true; // fuera del mapa = bloqueado
+  PImage tile = tiles[col][row];
+  if (tile == null) return false;
+  int px = wx % 256;
+  int py = wy % 256;
+  px = constrain(px, 0, tile.width - 1);
+  py = constrain(py, 0, tile.height - 1);
+  color c = tile.get(px, py);
+  return (red(c) > 40 && red(c) < 60 && green(c) > 32 && green(c) < 52 && blue(c) > 30 && blue(c) < 50);
+}
+
+// Comprueba si los pies del jugador en (px, py) chocan con pared
+boolean piesSobrePared(int px, int py) {
+  // Los pies = franja inferior del sprite 45x45, usamos 3 puntos: izq, centro, der
+  int feetY = py + 42;       // fila de pies (casi abajo del sprite)
+  int feetL = px + 8;        // pie izquierdo
+  int feetC = px + 22;       // pie centro
+  int feetR = px + 36;       // pie derecho
+  return esParedEnMundo(feetL, feetY) || esParedEnMundo(feetC, feetY) || esParedEnMundo(feetR, feetY);
+}
+
+// Devuelve true si el punto mundo (wx, wy) tiene color RGB(255, 152, 0)
+boolean esNaranjaEnMundo(int wx, int wy) {
+  int col = wx / 256;
+  int row = wy / 256;
+  if (col < 0 || col >= 8 || row < 0 || row >= 5) return false;
+  PImage tile = tiles[col][row];
+  if (tile == null) return false;
+  int px = constrain(wx % 256, 0, tile.width - 1);
+  int py = constrain(wy % 256, 0, tile.height - 1);
+  color c = tile.get(px, py);
+  return (red(c) > 240 && green(c) > 140 && green(c) < 165 && blue(c) < 15);
+}
+
+// Comprueba si los pies del jugador están sobre el color naranja (255,152,0)
+boolean piesSobreNaranja(int px, int py) {
+  int feetY = py + 42;
+  int feetL = px + 8;
+  int feetC = px + 22;
+  int feetR = px + 36;
+  return esNaranjaEnMundo(feetL, feetY) || esNaranjaEnMundo(feetC, feetY) || esNaranjaEnMundo(feetR, feetY);
+}
+
 void drawGame() {
   background(0);
   // Handle movement (no diagonal - last key pressed has priority)
@@ -34,16 +81,28 @@ void drawGame() {
   // swscreen3 == 2: sin NPCs, sin colision
 
   if (!colisionNPC) {
-    if (lastDirection == 'w') playerY -= 4;
-    else if (lastDirection == 's') playerY += 4;
-    else if (lastDirection == 'd') playerX += 4;  
-    else if (lastDirection == 'a') playerX -= 4;  
+    int nx = playerX;
+    int ny = playerY;
+    if (lastDirection == 'w') ny -= 4;
+    else if (lastDirection == 's') ny += 4;
+    else if (lastDirection == 'd') nx += 4;  
+    else if (lastDirection == 'a') nx -= 4;
+    // Solo mover si los pies no caen sobre color de pared
+    if (!piesSobrePared(nx, ny)) {
+      playerX = nx;
+      playerY = ny;
+    }
   }
 
   playerX = constrain(playerX, 0, 8 * 256 - 45);
   playerY = constrain(playerY, 0, 5 * 256 - 45);
   camX = constrain(playerX - GAME_W / 2 + 22, 0, max(0, 8 * 256 - GAME_W));
   camY = constrain(playerY - GAME_H / 2 + 22, 0, max(0, 5 * 256 - GAME_H));
+
+  // Si swscreen3 == 2 y los pies tocan color naranja RGB(255,152,0) -> nueva pantalla
+  if (swscreen3 == 2 && piesSobreNaranja(playerX, playerY)) {
+    goToScreen(6);
+  }
 
   pushMatrix();
   translate(-camX, -camY);
@@ -84,11 +143,7 @@ void drawGame() {
   textSize(10);
   if(swscreen3==0){
   text("Habla con tu mejor amigo Varis", GAME_W / 2, GAME_H - 35);
-  }else if(swscreen3==1){
-  text("Dirigete hacia el este", GAME_W / 2, GAME_H - 35);
-  }else if(swscreen3==2){
-  text("Entra a la primera casa", GAME_W / 2, GAME_H - 35);
-  }
+  }else{text("Dirigete hacia el norte", GAME_W / 2, GAME_H - 35);}
 }
 if (dialogoVaris && swscreen3 == 0) {
   // Dialogo original de Varis (swscreen3 == 0)
@@ -144,7 +199,7 @@ if (dialogoVaris && swscreen3 == 1) {
     fill(DARK);
     textAlign(LEFT, TOP);
     textSize(9);
-    text("Vamos a hacerle la vida imposible\nJAJAJAJAJA", 44, GAME_H - 62);
+    text("Vamos a hacer la vida imposible\nJAJAJAJAJA", 44, GAME_H - 62);
     
     fill(GRAY_MED);
     textAlign(RIGHT, BOTTOM);
@@ -200,6 +255,12 @@ void keyPressed() {
     return;
   }
   
+  // Screen 6 input
+  if (screen == 6) {
+    screen6KeyPressed();
+    return;
+  }
+  
   if (key == 'p' || key == 'P') {
     paused = !paused;
     return;
@@ -221,6 +282,11 @@ void keyReleased() {
   // Tutorial screen input
   if (screen == 5) {
     tutorialKeyReleased();
+  }
+  
+  // Screen 6 input
+  if (screen == 6) {
+    screen6KeyReleased();
   }
   
   if (key == 'w' || key == 'W') {
