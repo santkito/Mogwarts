@@ -2,6 +2,11 @@
 
 boolean screen6Initialized = false;
 
+// Game Over state
+boolean screen6GameOver = false;
+int screen6GameOverTimer = 0;
+int screen6GameOverDuration = 180; // 3 segundos antes de reiniciar
+
 PImage screen6Jefe;
 PImage screen6Dominio;
 PImage[] screen6MessageImages;
@@ -105,6 +110,7 @@ void setupScreen6() {
   screen6MessageImages[1] = loadImage("m1.png"); // neutro
   screen6MessageImages[2] = loadImage("m2.png"); // bullying
   screen6EImg = loadImage("E.png");
+  if (pausaImg == null) pausaImg = loadImage("pausa.png");
   
   // Reset animation states
   screen6EPressed = false;
@@ -113,6 +119,9 @@ void setupScreen6() {
   screen6RExplosionScale = 0;
   screen6RExplosionAlpha = 255;
   screen6RExplosionTimer = 0;
+  
+  screen6GameOver = false;
+  screen6GameOverTimer = 0;
   
   screen6PlayerX = width / 2;
   screen6PlayerY = height / 2;
@@ -195,13 +204,13 @@ void drawScreen6() {
     image(screen6Dominio, 0, 0, width, height);
     
     // Generar nuevos mensajes (mas rapido y mas cantidad)
-    if (frameCount % 18 == 0 && screen6Messages.size() < 22) {
+    if (!screen6GameOver && frameCount % 18 == 0 && screen6Messages.size() < 22) {
       int type = int(random(3));
       screen6Messages.add(new Message(type, true));
       screen6TotalMessages++;
     }
     // Spawn extra ocasional
-    if (frameCount % 30 == 0 && screen6Messages.size() < 22) {
+    if (!screen6GameOver && frameCount % 30 == 0 && screen6Messages.size() < 22) {
       int type = int(random(3));
       screen6Messages.add(new Message(type, true));
       screen6TotalMessages++;
@@ -243,19 +252,24 @@ void drawScreen6() {
       }
     }
     
-    // Manejar movimiento
-    if (screen6LastDirection == 'w') screen6PlayerY -= 15;
-    if (screen6LastDirection == 's') screen6PlayerY += 15;
-    if (screen6LastDirection == 'a') screen6PlayerX -= 15;
-    if (screen6LastDirection == 'd') screen6PlayerX += 15;
+    // Manejar movimiento (congelar si no hay game over y score no alcanzó el limite)
+    boolean s6Finished = (screen6Score >= 150);
+    if (!screen6GameOver && !s6Finished) {
+      if (screen6LastDirection == 'w') screen6PlayerY -= 15;
+      if (screen6LastDirection == 's') screen6PlayerY += 15;
+      if (screen6LastDirection == 'a') screen6PlayerX -= 15;
+      if (screen6LastDirection == 'd') screen6PlayerX += 15;
+    }
     
     screen6PlayerX = constrain(screen6PlayerX, 45, width - 45);
     screen6PlayerY = constrain(screen6PlayerY, 45, height - 150);
     
     // Actualizar animacion del sprite
-    lastDirection = screen6LastDirection;
-    if (screen6LastDirection != ' ') {
+    lastDirection = (screen6GameOver || s6Finished) ? ' ' : screen6LastDirection;
+    if (!screen6GameOver && !s6Finished && screen6LastDirection != ' ') {
       updatePlayer();
+    } else if (screen6GameOver || s6Finished) {
+      spriteCol = 1; // frame quieto
     }
     
     // Dibujar jefe1 centrado arriba
@@ -319,6 +333,48 @@ void drawScreen6() {
     // Dibujar barra de bien-estar
     drawWellBeingBarScreen6();
     
+    // === GAME OVER ===
+    if (screen6WellBeing <= 0 && !screen6GameOver) {
+      screen6GameOver = true;
+      screen6GameOverTimer = 0;
+    }
+    
+    if (screen6GameOver) {
+      screen6GameOverTimer++;
+      // Overlay oscuro
+      fill(0, min(200, screen6GameOverTimer * 3));
+      rect(0, 0, width, height);
+      // Texto GAME OVER
+      float goAlpha = min(255, screen6GameOverTimer * 5);
+      // Sombra
+      fill(100, 0, 0, goAlpha);
+      textAlign(CENTER, CENTER);
+      textSize(92);
+      text("GAME OVER", width/2 + 4, height/2 + 4);
+      // Texto principal
+      fill(220, 40, 40, goAlpha);
+      text("GAME OVER", width/2, height/2);
+      // Subtexto
+      if (screen6GameOverTimer > 60) {
+        float subAlpha = min(255, (screen6GameOverTimer - 60) * 6);
+        fill(220, 220, 220, subAlpha);
+        textSize(22);
+        text("Reiniciando...", width/2, height/2 + 75);
+      }
+      // Tras el tiempo, reiniciar la pantalla
+      if (screen6GameOverTimer >= screen6GameOverDuration) {
+        screen6GameOver = false;
+        screen6Initialized = false;
+        screen6WellBeing = 100;
+        screen6Score = 0;
+        screen6BullCount = 0;
+        screen6ConsecutiveBullying = 0;
+        screen6TotalMessages = 0;
+        screen6Messages = new ArrayList<Message>();
+      }
+      return; // No dibujar nada más mientras game over
+    }
+    
     // Dibujar puntuación y contadores
     fill(CREAM);
     textAlign(LEFT, TOP);
@@ -344,14 +400,18 @@ void drawScreen6() {
     }
     
     if (screen6GamePaused) {
-      fill(0, 0, 0, 200);
-      rect(0, 0, width, height);
-      fill(CREAM);
-      textAlign(CENTER, CENTER);
-      textSize(48);
-      text("PAUSED", width/2, height/2);
-      textSize(24);
-      text("Press P to Resume", width/2, height/2 + 60);
+      if (pausaImg != null) {
+        image(pausaImg, 0, 0, width, height);
+      } else {
+        fill(0, 0, 0, 200);
+        rect(0, 0, width, height);
+        fill(CREAM);
+        textAlign(CENTER, CENTER);
+        textSize(48);
+        text("PAUSED", width/2, height/2);
+        textSize(24);
+        text("Press P to Resume", width/2, height/2 + 60);
+      }
     }
   }
 }
@@ -386,6 +446,7 @@ void drawWellBeingBarScreen6() {
 
 void screen6KeyPressed() {
   if (!screen6GameStarted) return;
+  if (screen6GameOver) return; // Ignorar input durante game over
   
   char key_lower = Character.toLowerCase(key);
   
@@ -681,6 +742,12 @@ void drawCredits() {
     fill(5, 5, 18, a);
     noStroke();
     rect(0, height - y, width, 1);
+  }
+
+  // Cierre automatico al terminar los creditos
+  totalH = creditsLines.length * lineH;
+  if (creditsScroll > totalH + height * 0.5) {
+    exit();
   }
 
   // Instruccion al llegar al final

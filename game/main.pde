@@ -6,6 +6,7 @@ PFont pixelFontSmall;
 PFont pixelFontTitle;
 
 PImage[][] tiles;
+PImage titleImg;
 
 int screen = 0; // 0=title, 1=controls, 2=context, 3=game, 4=loading
 float blinkTimer = 0;
@@ -27,23 +28,11 @@ color SHADOW = color(16, 16, 16);
 color GRAY_LIGHT = color(200, 200, 200);
 color GRAY_MED = color(140, 140, 140);
 
-// Animacion titulo
-float titleY = 0;
-float titlePulse = 0;
-boolean titleReady = false;
-int titleAnim = 0; // frames
-
-// Estrellas de fondo
-float[] starX = new float[80];
-float[] starY = new float[80];
-float[] starBright = new float[80];
-float[] starSpeed = new float[80];
-
 // Context page
 String[] contextLines;
 float contextFade = 0;
 
-// Controls page  
+// Controls page
 float controlsFade = 0;
 
 // Transicion
@@ -70,14 +59,6 @@ void setup() {
   SCALE_FACTOR = min((float)displayWidth / GAME_W, (float)displayHeight / GAME_H);
   textFont(createFont("Courier New Bold", 14));
   
-  // Inicializar estrellas
-  for (int i = 0; i < starX.length; i++) {
-    starX[i] = random(width);
-    starY[i] = random(height);
-    starBright[i] = random(100, 255);
-    starSpeed[i] = random(0.1, 0.4);
-  }
-  
   // Preparar texto de contexto
   String contextRaw = "En un lugar donde la confianza lo era todo, las amistades parecían inquebrantables.\n"
 + "Risas compartidas, secretos guardados y promesas que nunca debían romperse… o al menos eso parecía.\n\n"
@@ -96,6 +77,7 @@ void setup() {
   setupPlayer();
   setupTutorial();
   tiles = new PImage[8][5];
+  titleImg = loadImage("title.png");
   screen = 4; // Start with loading screen
   drawLoadingScreen(); // Draw initial loading screen to avoid gray screen
 }
@@ -128,46 +110,35 @@ void draw() {
   background(0);
 
   if (screen == 5) {
-    // El tutorial está diseñado para aprovechar el tamaño de pantalla completo,
-    // por lo que no lo escalamos con el canvas lógico 480x320.
     drawTutorial();
     handleFade();
-    titleAnim++;
     return;
   }
   
   if (screen == 6) {
-    // Screen 6 también usa pantalla completa como el tutorial
     drawScreen6();
     handleFade();
-    titleAnim++;
     return;
   }
 
   if (screen == 7) {
-    // Pantalla de creditos - pantalla completa
     drawCredits();
-    titleAnim++;
     return;
   }
 
-  // Centrar y escalar el canvas logico 480x320
   float offsetX = (width - GAME_W * SCALE_FACTOR) / 2;
   float offsetY = (height - GAME_H * SCALE_FACTOR) / 2;
   pushMatrix();
   translate(offsetX, offsetY);
   scale(SCALE_FACTOR);
 
-  // Only clear with menu background on non-game screens
   if (screen != 3) {
     background(DARK);
-    // Base animations apply only to UI screens
     blinkTimer += 0.04;
     if (blinkTimer > PI) {
       blinkTimer = 0;
       showBlink = !showBlink;
     }
-    titlePulse += 0.05;
     // Scroll suave del contexto
     contextScroll += (contextTarget - contextScroll) * 0.15;
   }
@@ -178,97 +149,22 @@ void draw() {
   else if (screen == 3) drawGame();
   else if (screen == 4) drawLoadingScreen();
   
-  // Fade overlay
   handleFade();
   
   popMatrix();
-  titleAnim++;
 }
 
 // ===== PANTALLA 1: TITULO =====
 void drawTitleScreen() {
-  // Fondo degradado nocturno
-  for (int y = 0; y < GAME_H; y++) {
-    float t = (float)y / GAME_H;
-    color c = lerpColor(color(8, 12, 48), color(24, 16, 56), t);
-    stroke(c);
-    line(0, y, GAME_W, y);
+  // Imagen de titulo a pantalla completa (espacio logico 480x320)
+  if (titleImg != null) {
+    image(titleImg, 0, 0, GAME_W, GAME_H);
+  } else {
+    background(DARK);
   }
-  
-  // Estrellas animadas
-  noStroke();
-  for (int i = 0; i < starX.length; i++) {
-    starY[i] += starSpeed[i];
-    if (starY[i] > GAME_H) starY[i] = 0;
-    float b = starBright[i] * (0.5 + 0.5 * sin(frameCount * 0.03 + i));
-    fill(b, b, b * 0.9, b);
-    ellipse(starX[i], starY[i], 1.5, 1.5);
-  }
-  
-  // Luna/planeta decorativo
-  noStroke();
-  fill(BLUE_DARK, 80);
-  ellipse(GAME_W - 60, 55, 90, 90);
-  fill(BLUE_MID, 120);
-  ellipse(GAME_W - 55, 50, 75, 75);
-  fill(BLUE_LIGHT, 60);
-  ellipse(GAME_W - 65, 42, 50, 50);
-  
-  // Castillo silueta (simple, pixelado)
-  drawCastle();
-  
-  // Panel titulo principal
-  int panelW = 360;
-  int panelH = 90;
-  int panelX = (GAME_W - panelW) / 2;
-  int panelY = 30;
-  
-  // Sombra panel
-  fill(SHADOW, 160);
-  rect(panelX + 4, panelY + 4, panelW, panelH, 4);
-  
-  // Panel borde dorado
-  fill(GOLD);
-  rect(panelX - 2, panelY - 2, panelW + 4, panelH + 4, 6);
-  fill(BLUE_DARK);
-  rect(panelX, panelY, panelW, panelH, 4);
-  
-  // Linea decorativa interior
-  stroke(GOLD, 180);
-  strokeWeight(1);
-  line(panelX + 8, panelY + 8, panelX + panelW - 8, panelY + 8);
-  line(panelX + 8, panelY + panelH - 8, panelX + panelW - 8, panelY + panelH - 8);
-  noStroke();
-  
-  // Titulo "MOGWARTS"
-  float pulse = sin(titlePulse) * 2;
-  
-  // Sombra texto
-  fill(SHADOW);
-  textAlign(CENTER, CENTER);
-  textSize(28);
-  text("MOGWARTS", GAME_W/2 + 2, panelY + 32 + 2);
-  
-  // Texto dorado
-  fill(GOLD);
-  textSize(28);
-  text("MOGWARTS", GAME_W/2, panelY + 32);
-  
-  // Subtitulo
-  fill(BLUE_LIGHT);
-  textSize(11);
-  text("PSL  SCALE  EDITION", GAME_W/2, panelY + 62);
-  
-  // Lineas decorativas
-  fill(RED_MAIN);
-  rect(panelX + 20, panelY + 45, panelW - 40, 2);
-  
-  // Personaje (ASCII art simple con shapes)
-  drawCharacter(GAME_W/2, 205);
-  
-  // "CLICK EN CUALQUIER LADO"
+
+  // Prompt parpadeante encima de la imagen
   if (showBlink) {
-    // Caja de texto estilo pokemon
     drawDialogBox(60, 262, 360, 42);
     fill(DARK);
     textAlign(CENTER, CENTER);
@@ -281,109 +177,9 @@ void drawTitleScreen() {
     textSize(12);
     text("   Click en cualquier lado   ", GAME_W/2, 283);
   }
-  
-  // Version
-  fill(GRAY_MED);
-  textSize(9);
-  textAlign(LEFT, BOTTOM);
-  text("v1.0  MOGWARTS", 8, GAME_H - 4);
-  textAlign(CENTER, CENTER);
 }
 
-void drawCastle() {
-  // Silueta castillo
-  fill(color(15, 10, 35));
-  noStroke();
-  
-  // Base
-  rect(100, 230, 280, 60);
-  
-  // Torres
-  rect(100, 195, 40, 50);
-  rect(340, 195, 40, 50);
-  rect(160, 210, 30, 40);
-  rect(290, 210, 30, 40);
-  rect(210, 200, 60, 50);
-  
-  // Almenas torres principales
-  for (int i = 0; i < 5; i++) {
-    rect(100 + i * 9, 188, 6, 10);
-    rect(340 + i * 9, 188, 6, 10);
-  }
-  for (int i = 0; i < 4; i++) {
-    rect(160 + i * 8, 203, 5, 8);
-    rect(290 + i * 8, 203, 5, 8);
-  }
-  // Torre central
-  for (int i = 0; i < 7; i++) {
-    rect(210 + i * 9, 193, 6, 9);
-  }
-  
-  // Ventanas brillantes
-  fill(GOLD, 100 + 80 * sin(frameCount * 0.04));
-  rect(116, 215, 8, 10);
-  rect(356, 215, 8, 10);
-  fill(BLUE_LIGHT, 80 + 60 * sin(frameCount * 0.03 + 1));
-  rect(231, 220, 18, 12);
-}
 
-void drawCharacter(float x, float y) {
-  // Personaje estilo 16-bit simple
-  float bob = sin(frameCount * 0.06) * 2;
-  y += bob;
-  
-  // Sombra
-  fill(SHADOW, 80);
-  ellipse(x, y + 32, 40, 8);
-  
-  // Capa/toga
-  fill(color(80, 30, 120));
-  triangle(x - 18, y + 10, x + 18, y + 10, x + 12, y + 30);
-  triangle(x - 18, y + 10, x - 12, y + 30, x + 5, y + 30);
-  
-  // Cuerpo
-  fill(color(60, 60, 80));
-  rect(x - 12, y - 5, 24, 22, 3);
-  
-  // Corbata
-  fill(RED_MAIN);
-  rect(x - 3, y - 2, 6, 14);
-  triangle(x - 3, y + 12, x + 3, y + 12, x, y + 18);
-  
-  // Cabeza
-  fill(color(220, 180, 140));
-  ellipse(x, y - 14, 26, 24);
-  
-  // Pelo
-  fill(DARK);
-  ellipse(x, y - 22, 26, 12);
-  rect(x - 13, y - 22, 26, 8);
-  
-  // Ojos
-  fill(DARK);
-  ellipse(x - 5, y - 14, 4, 4);
-  ellipse(x + 5, y - 14, 4, 4);
-  
-  // Gafas (lentes)
-  noFill();
-  stroke(DARK);
-  strokeWeight(1.5);
-  ellipse(x - 5, y - 14, 8, 7);
-  ellipse(x + 5, y - 14, 8, 7);
-  line(x - 1, y - 14, x + 1, y - 14);
-  line(x - 9, y - 14, x - 13, y - 15);
-  line(x + 9, y - 14, x + 13, y - 15);
-  noStroke();
-  
-  // Sombrero
-  fill(color(30, 20, 60));
-  rect(x - 14, y - 28, 28, 8, 2);
-  triangle(x - 10, y - 28, x + 10, y - 28, x, y - 48);
-  
-  // Brillo sombrero
-  fill(WHITE, 60);
-  triangle(x - 3, y - 45, x + 2, y - 30, x + 4, y - 44);
-}
 
 void drawDialogBox(float x, float y, float w, float h) {
   // Sombra
@@ -404,86 +200,17 @@ void drawDialogBox(float x, float y, float w, float h) {
 }
 
 // ===== PANTALLA 2: CONTROLES =====
+PImage controlesImg;
+
 void drawControlsScreen() {
-  // Fondo
-  for (int y = 0; y < GAME_H; y++) {
-    float t = (float)y / GAME_H;
-    color c = lerpColor(color(16, 24, 72), color(8, 48, 40), t);
-    stroke(c);
-    line(0, y, GAME_W, y);
+  if (controlesImg == null) controlesImg = loadImage("controles.png");
+  if (controlesImg != null) {
+    image(controlesImg, 0, 0, GAME_W, GAME_H);
+  } else {
+    background(DARK);
   }
-  noStroke();
-  
-  // Header
-  fill(BLUE_DARK);
-  rect(0, 0, GAME_W, 52);
-  stroke(GOLD);
-  strokeWeight(2);
-  line(0, 50, GAME_W, 50);
-  noStroke();
-  
-  // Decoracion header
-  fill(GOLD);
-  rect(0, 48, GAME_W, 4);
-  
-  fill(WHITE);
-  textAlign(CENTER, CENTER);
-  textSize(20);
-  text("CONTROLES", GAME_W/2 + 2, 27 + 1);
-  fill(GOLD);
-  text("CONTROLES", GAME_W/2, 27);
-  
-  // Panel principal controles
-  drawDialogBox(30, 62, 420, 195);
-  
-  // Controles
-  float[][] controls = {
-    {0}, // placeholder
-  };
-  
-  String[][] ctrlData = {
-    {"W  A  S  D", "Movimiento"},
-    {"P", "Pausa"},
-    {"Q", "Capturar"},
-    {"E", "Bloquear"},
-    {"R", "Reportar"}
-  };
-  
-  color[] ctrlColors = {BLUE_MID, RED_MAIN, color(40, 160, 40), color(200, 120, 0), color(140, 40, 160)};
-  
-  for (int i = 0; i < ctrlData.length; i++) {
-    float rowY = 82 + i * 36;
-    
-    // Fila alterna
-    if (i % 2 == 0) {
-      fill(BLUE_LIGHT, 40);
-      rect(38, rowY - 2, 404, 28, 3);
-    }
-    
-    // Tecla(s)
-    String keys = ctrlData[i][0];
-    String[] keyParts = keys.split("  ");
-    float keyX = 60;
-    
-    for (String k : keyParts) {
-      drawKey(keyX, rowY + 6, k, ctrlColors[i]);
-      keyX += k.length() * 9 + 20;
-    }
-    
-    // Separador
-    fill(GRAY_MED);
-    textAlign(LEFT, CENTER);
-    textSize(10);
-    text("→", 210, rowY + 13);
-    
-    // Descripcion
-    fill(DARK);
-    textSize(13);
-    textAlign(LEFT, CENTER);
-    text(ctrlData[i][1], 228, rowY + 13);
-  }
-  
-  // Footer
+
+  // Footer parpadeante encima de la imagen
   drawDialogBox(60, 270, 360, 38);
   fill(DARK);
   textAlign(CENTER, CENTER);
@@ -493,29 +220,6 @@ void drawControlsScreen() {
   } else {
     text("   Click para continuar   ", GAME_W/2, 289);
   }
-}
-
-void drawKey(float x, float y, String k, color c) {
-  float kw = max(28, k.length() * 10 + 10);
-  float kh = 22;
-  
-  // Sombra tecla
-  fill(lerpColor(c, SHADOW, 0.7));
-  rect(x + 2, y + 2, kw, kh, 4);
-  
-  // Tecla
-  fill(c);
-  rect(x, y, kw, kh, 4);
-  
-  // Brillo
-  fill(WHITE, 80);
-  rect(x + 2, y + 2, kw - 4, kh/2 - 2, 3);
-  
-  // Texto
-  fill(WHITE);
-  textAlign(CENTER, CENTER);
-  textSize(10);
-  text(k, x + kw/2, y + kh/2);
 }
 
 // ===== PANTALLA 3: CONTEXTO =====
@@ -585,7 +289,7 @@ void drawContextScreen() {
     if (contextLines[i].equals("")) continue;
     
     // Detección párrafos iniciales
-    boolean isSpecial = contextLines[i].startsWith("El silencio") || contextLines[i].startsWith("quedarse en");
+    boolean isSpecial = contextLines[i].startsWith("El silencio") || contextLines[i].startsWith("quedarse en")|| contextLines[i].startsWith("palabras")|| contextLines[i].startsWith("frente");
     
     fill(isSpecial ? RED_LIGHT : CREAM, alpha);
     textAlign(LEFT, CENTER);

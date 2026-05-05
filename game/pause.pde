@@ -4,45 +4,45 @@ int pauseSelected = 0;
 String[] pauseOptions = {"Continuar", "Reiniciar", "Salir"};
 
 void drawPauseMenu() {
-  // Oscurecer fondo
-  fill(0, 160);
-  rect(0, 0, width, height);
+  if (pausaImg != null) {
+    // Usar la imagen de pausa a pantalla completa (espacio logico 480x320)
+    image(pausaImg, 0, 0, GAME_W, GAME_H);
+  } else {
+    // Fallback si la imagen no cargó
+    fill(0, 160);
+    rect(0, 0, GAME_W, GAME_H);
 
-  // Panel
-  int pw = 220, ph = 160;
-  int px = (width - pw) / 2;
-  int py = (height - ph) / 2;
+    int pw = 220, ph = 160;
+    int px = (GAME_W - pw) / 2;
+    int py = (GAME_H - ph) / 2;
 
-  fill(SHADOW, 180); rect(px+4, py+4, pw, ph, 6);
-  fill(GOLD);        rect(px-2, py-2, pw+4, ph+4, 6);
-  fill(BLUE_DARK);   rect(px, py, pw, ph, 4);
+    fill(SHADOW, 180); rect(px+4, py+4, pw, ph, 6);
+    fill(GOLD);        rect(px-2, py-2, pw+4, ph+4, 6);
+    fill(BLUE_DARK);   rect(px, py, pw, ph, 4);
 
-  // Titulo
-  fill(GOLD);
-  textAlign(CENTER, CENTER);
-  textSize(16);
-  text("PAUSA", width/2, py + 28);
+    fill(GOLD);
+    textAlign(CENTER, CENTER);
+    textSize(16);
+    text("PAUSA", GAME_W/2, py + 28);
 
-  stroke(GOLD, 120); strokeWeight(1);
-  line(px+16, py+42, px+pw-16, py+42);
-  noStroke();
+    stroke(GOLD, 120); strokeWeight(1);
+    line(px+16, py+42, px+pw-16, py+42);
+    noStroke();
 
-  // Opciones
-  for (int i = 0; i < pauseOptions.length; i++) {
-    float optY = py + 72 + i * 30;
-
-    if (i == pauseSelected) {
-      fill(GOLD, 40);
-      rect(px+12, optY-12, pw-24, 24, 3);
-      fill(GOLD);
-      textSize(11); textAlign(LEFT, CENTER);
-      text("▶", px+22, optY);
-    } else {
-      fill(CREAM);
+    for (int i = 0; i < pauseOptions.length; i++) {
+      float optY = py + 72 + i * 30;
+      if (i == pauseSelected) {
+        fill(GOLD, 40);
+        rect(px+12, optY-12, pw-24, 24, 3);
+        fill(GOLD);
+        textSize(11); textAlign(LEFT, CENTER);
+        text("▶", px+22, optY);
+      } else {
+        fill(CREAM);
+      }
+      textSize(11); textAlign(CENTER, CENTER);
+      text(pauseOptions[i], GAME_W/2, optY);
     }
-
-    textSize(11); textAlign(CENTER, CENTER);
-    text(pauseOptions[i], width/2, optY);
   }
 }
 

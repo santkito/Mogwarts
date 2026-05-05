@@ -42,6 +42,7 @@ boolean tutorialMovementEnabled = false;
 boolean gameplayClicked = false;
 boolean gameStarted = false;
 boolean gamePaused = false;
+PImage pausaImg;
 
 int dialogoIndex = 0;
 String[] dialogos;
@@ -173,13 +174,14 @@ void setupTutorial() {
   hedwigVol = loadImage("hedwigVol.png");
   hedwigL = loadImage("hedwigL.png");
   hedwigF = loadImage("hedwigF.png");
-  gameplayImg = loadImage("gameplay.jpeg");
+  gameplayImg = loadImage("gameplay.png");
   
   messageImages = new PImage[3];
   messageImages[0] = loadImage("m0.png"); // positivo
   messageImages[1] = loadImage("m1.png"); // neutro
   messageImages[2] = loadImage("m2.png"); // bullying
   eImg = loadImage("E.png");
+  pausaImg = loadImage("pausa.png");
   
   // Reset animation states
   ePressed = false;
@@ -270,7 +272,30 @@ void drawTutorial() {
       if (!mostrarDialogo) {
         mostrarDialogo = true;
       }
-      
+
+      // Pantalla gameplay intermedia (despues de dialogos, antes del juego)
+      if (mostrarGameplayImage) {
+        if (gameplayImg != null) {
+          image(gameplayImg, 0, 0, width, height);
+        }
+        fill(0, 160);
+        rect(0, height - 100, width, 100);
+        float blinkA2 = 150 + 105 * sin(frameCount * 0.08);
+        fill(255, 255, 255, blinkA2);
+        textAlign(CENTER, CENTER);
+        textSize(28);
+        text("Click para comenzar", width / 2, height - 50);
+        return; // No dibujar dialogo encima
+      }
+
+      // Dibujar hedwigL ENCIMA del dominio durante el dialogo
+      if (mostrarDialogo && hedwigL != null) {
+        float hScale = 0.55;
+        float hW = hedwigL.width * hScale;
+        float hH = hedwigL.height * hScale;
+        image(hedwigL, 40, height - hH - 20, hW, hH);
+      }
+
       // Dibujar diálogo
       if (mostrarDialogo) {
         fill(BLUE_DARK);
@@ -329,19 +354,24 @@ void drawTutorial() {
       }
     }
     
-    // Manejar movimiento
-    if (tutorialLastDirection == 'w') tutorialPlayerY -= 15;
-    if (tutorialLastDirection == 's') tutorialPlayerY += 15;
-    if (tutorialLastDirection == 'a') tutorialPlayerX -= 15;
-    if (tutorialLastDirection == 'd') tutorialPlayerX += 15;
+    // Manejar movimiento (congelar si score suficiente para continuar)
+    boolean tutorialFinished = (score >= 150);
+    if (!tutorialFinished) {
+      if (tutorialLastDirection == 'w') tutorialPlayerY -= 15;
+      if (tutorialLastDirection == 's') tutorialPlayerY += 15;
+      if (tutorialLastDirection == 'a') tutorialPlayerX -= 15;
+      if (tutorialLastDirection == 'd') tutorialPlayerX += 15;
+    }
     
     tutorialPlayerX = constrain(tutorialPlayerX, 45, width - 45);
     tutorialPlayerY = constrain(tutorialPlayerY, 45, height - 150);
     
     // Actualizar animacion del sprite
-    lastDirection = tutorialLastDirection;
-    if (tutorialLastDirection != ' ') {
+    lastDirection = tutorialFinished ? ' ' : tutorialLastDirection;
+    if (!tutorialFinished && tutorialLastDirection != ' ') {
       updatePlayer();
+    } else if (tutorialFinished) {
+      spriteCol = 1; // frame quieto
     }
     
     // Dibujar hedwigF centrado arriba
@@ -430,14 +460,18 @@ void drawTutorial() {
     }
     
     if (gamePaused) {
-      fill(0, 0, 0, 200);
-      rect(0, 0, width, height);
-      fill(CREAM);
-      textAlign(CENTER, CENTER);
-      textSize(48);
-      text("PAUSED", width/2, height/2);
-      textSize(24);
-      text("Press P to Resume", width/2, height/2 + 60);
+      if (pausaImg != null) {
+        image(pausaImg, 0, 0, width, height);
+      } else {
+        fill(0, 0, 0, 200);
+        rect(0, 0, width, height);
+        fill(CREAM);
+        textAlign(CENTER, CENTER);
+        textSize(48);
+        text("PAUSED", width/2, height/2);
+        textSize(24);
+        text("Press P to Resume", width/2, height/2 + 60);
+      }
     }
   }
 }

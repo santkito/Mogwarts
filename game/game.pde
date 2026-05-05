@@ -240,7 +240,7 @@ if (dialogoVaris && swscreen3 == 0) {
   fill(DARK);
   textAlign(LEFT, TOP);
   textSize(9);
-  text("Tiempo sin verte, Clavicular. Sé que eres\nnuevo en Mogwarts, así que conjuré un\ncompañero mágico para ti. Conózcanse,\ntengo que irme a resolver unos asuntos.", 44, GAME_H - 62);
+  text("Tiempo sin verte, Clavicular. Sé que eres\nnuevo en Mogwarts, así que conjuré una\ncompañera mágica para ti. Conózcanse,\ntengo que irme a resolver unos asuntos.", 44, GAME_H - 62);
   
   fill(GRAY_MED);
   textAlign(RIGHT, BOTTOM);

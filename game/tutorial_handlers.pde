@@ -2,10 +2,17 @@
 
 void tutorialMousePressed() {
   if (!gameStarted && mostrarDialogo) {
-    // During intro dialog
+    if (mostrarGameplayImage) {
+      // Click en pantalla gameplay -> arrancar juego
+      mostrarGameplayImage = false;
+      gameStarted = true;
+      return;
+    }
+    // Durante dialogos
     dialogoIndex++;
     if (dialogoIndex >= dialogos.length) {
-      gameStarted = true;
+      // Dialogos terminados: mostrar imagen gameplay
+      mostrarGameplayImage = true;
     } else {
       dialogoLines = wrapText(dialogos[dialogoIndex], 75);
     }
